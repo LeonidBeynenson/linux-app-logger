@@ -23,7 +23,8 @@ def get_active_program():
     return app, title
 
 def get_timestamp():
-    return datetime.now(tzlocal()).strftime('%Y-%m-%dT%T%Z')
+    #    return datetime.now(tzlocal()).strftime('%Y-%m-%d_%T%Z')
+    return commands.getoutput("date +'%Y-%m-%d_%H-%M-%S'")
 
 
 with daemon.DaemonContext():
