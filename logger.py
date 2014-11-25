@@ -28,12 +28,22 @@ def get_timestamp():
 
 
 with daemon.DaemonContext():
+    should_print_screensaver = True
+    should_print = True
     while True:
         try:
             if is_active():
                 app, title = get_active_program()
                 log_line = '%s\t%-30s\t%s\n' % (get_timestamp(), app, title)
+		should_print_screensaver = True
+		should_print = True
+            else:
+                log_line = '%s\t%-30s\t%s\n' % (get_timestamp(), "Screensaver", "\n\n\n")
+		should_print = should_print_screensaver
+		should_print_screensaver = False
 
+
+            if should_print:
                 if log_file == '-':
                     print log_line,
                 else:
