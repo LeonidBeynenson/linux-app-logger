@@ -1,4 +1,4 @@
 #!/bin/sh
-cd /home/suor/projects/linux-app-logger
+cd /home/leonid/bin/linux-app-logger
 ./logger.py real-log 60 2>/home/suor/q
 
