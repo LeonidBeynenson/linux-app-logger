@@ -1,0 +1,2 @@
+winlog_[0-9-]*
+winlog_[0-9-]*.err
