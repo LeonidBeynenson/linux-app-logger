@@ -6,7 +6,7 @@ from dateutil.tz import tzlocal
 import daemon
 
 
-log_file = os.path.abspath(sys.argv[1]) if sys.argv[1] != '-' else '-'
+log_file_dir = os.path.abspath(sys.argv[1]) if sys.argv[1] != '-' else '-'
 timeout = float(sys.argv[2] if len(sys.argv) >= 3 else 60)
 
 
@@ -30,28 +30,33 @@ def get_timestamp():
 with daemon.DaemonContext():
     should_print_screensaver = True
     should_print = True
+    cur_date = ""
     while True:
         try:
+            cur_timestamp = get_timestamp()
+            cur_date = cur_timestamp.split("_")[0]
             if is_active():
                 app, title = get_active_program()
-                log_line = '%s\t%-30s\t%s\n' % (get_timestamp(), app, title)
+                log_line = '%s\t%-30s\t%s\n' % (cur_timestamp, app, title)
 		should_print_screensaver = True
 		should_print = True
             else:
-                log_line = '%s\t%-30s\t%s\n' % (get_timestamp(), "Screensaver", "\n\n\n")
+                log_line = '%s\t%-30s\t%s\n' % (cur_timestamp, "Screensaver", "\n\n\n")
 		should_print = should_print_screensaver
 		should_print_screensaver = False
 
 
             if should_print:
-                if log_file == '-':
+                if log_file_dir == '-':
                     print log_line,
                 else:
+                    log_file = os.path.join(log_file_dir, "winlog_" + cur_date)
                     with open(log_file, 'a') as f:
                         f.write(log_line)
         except Exception:
             import traceback
-            with open(log_file + '.err', 'a') as f:
+            err_file = os.path.join(log_file_dir, "winlog_" + cur_date + ".err")
+            with open(err_file, 'a') as f:
                 traceback.print_exc(None, f);
 
         time.sleep(timeout)
