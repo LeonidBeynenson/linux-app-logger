@@ -14,7 +14,13 @@ def is_active(app, title):
     if (app == "desktop_window.Nautilus") and (title == "Desktop"):
         return False
 
-    return 'is active' not in commands.getoutput("gnome-screensaver-command -q")
+    if 'is active' in commands.getoutput("gnome-screensaver-command -q"):
+        return False
+
+    if 'lockscreen' in commands.getoutput("ps ax | grep [l]ockscreen"):
+        return False
+
+    return True
 
 def get_active_program():
     active_window_string = commands.getoutput("xprop -root | grep '_NET_ACTIVE_WINDOW(WINDOW)'")
