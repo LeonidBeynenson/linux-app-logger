@@ -17,7 +17,7 @@ def is_active(app, title):
     if 'is active' in commands.getoutput("gnome-screensaver-command -q"):
         return False
 
-    if 'lockscreen' in commands.getoutput("ps ax | grep [l]ockscreen"):
+    if 'lockscreen' in commands.getoutput("ps ax | grep '/usr/lib/unity/unity-panel-service .*[l]ockscreen'"):
         return False
 
     return True
