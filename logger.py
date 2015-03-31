@@ -10,7 +10,10 @@ log_file_dir = os.path.abspath(sys.argv[1]) if sys.argv[1] != '-' else '-'
 timeout = float(sys.argv[2] if len(sys.argv) >= 3 else 60)
 
 
-def is_active():
+def is_active(app, title):
+    if (app == "desktop_window.Nautilus") and (title == "Desktop"):
+        return False
+
     return 'is active' not in commands.getoutput("gnome-screensaver-command -q")
 
 def get_active_program():
@@ -31,16 +34,29 @@ with daemon.DaemonContext():
     should_print_screensaver = True
     should_print = True
     cur_date = ""
+    time_of_screensaver_start = 0
     while True:
         try:
             cur_timestamp = get_timestamp()
             cur_date = cur_timestamp.split("_")[0]
-            if is_active():
-                app, title = get_active_program()
+            app, title = get_active_program()
+            if is_active(app, title):
                 log_line = '%s\t%-30s\t%s\n' % (cur_timestamp, app, title)
+
+                if not should_print_screensaver:
+                    dt_sleep = time.time() - time_of_screensaver_start
+                    if (dt_sleep > 60):
+                        time_of_screensaver_start = 0
+                        log_line_from_screensaver_work = "rest {} min??????????????????????????????".format(int(dt_sleep/60))
+                        log_line = log_line_from_screensaver_work + "\n\n" + log_line
+                        pass
+
 		should_print_screensaver = True
 		should_print = True
             else:
+                if should_print_screensaver:
+                    time_of_screensaver_start = time.time()
+
                 log_line = '%s\t%-30s\t%s\n' % (cur_timestamp, "Screensaver", "\n\n\n")
 		should_print = should_print_screensaver
 		should_print_screensaver = False
