@@ -40,9 +40,12 @@ with daemon.DaemonContext():
     should_print_screensaver = True
     should_print = True
     cur_date = ""
+    prev_date = ""
     time_of_screensaver_start = 0
+    is_first_record_after_start = True
     while True:
         try:
+            prev_date = cur_date
             cur_timestamp = get_timestamp()
             cur_date = cur_timestamp.split("_")[0]
             app, title = get_active_program()
@@ -51,22 +54,25 @@ with daemon.DaemonContext():
 
                 if not should_print_screensaver:
                     dt_sleep = time.time() - time_of_screensaver_start
-                    if (dt_sleep > 60):
-                        time_of_screensaver_start = 0
+                    time_of_screensaver_start = 0
+                    if (dt_sleep > 60) and (cur_date == prev_date):
                         log_line_from_screensaver_work = "rest {} min??????????????????????????????".format(int(dt_sleep/60))
                         log_line = log_line_from_screensaver_work + "\n\n" + log_line
                         pass
 
-		should_print_screensaver = True
-		should_print = True
+                should_print_screensaver = True
+                should_print = True
             else:
                 if should_print_screensaver:
                     time_of_screensaver_start = time.time()
 
                 log_line = '%s\t%-30s\t%s\n' % (cur_timestamp, "Screensaver", "\n\n\n")
-		should_print = should_print_screensaver
-		should_print_screensaver = False
+                should_print = should_print_screensaver
+                should_print_screensaver = False
 
+            if is_first_record_after_start:
+                log_line = "(start)\n" + log_line
+                is_first_record_after_start = False
 
             if should_print:
                 if log_file_dir == '-':
