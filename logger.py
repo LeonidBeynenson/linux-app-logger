@@ -8,17 +8,27 @@ import daemon
 
 log_file_dir = os.path.abspath(sys.argv[1]) if sys.argv[1] != '-' else '-'
 timeout = float(sys.argv[2] if len(sys.argv) >= 3 else 60)
+computer_prefix = sys.argv[3] if len(sys.argv) >= 4 else ""
+daemonlock_file = sys.argv[4] if len(sys.argv) >= 5 else ""
 
 
 def is_active(app, title):
     if (app == "desktop_window.Nautilus") and (title == "Desktop"):
         return False
 
-    if 'is active' in commands.getoutput("gnome-screensaver-command -q"):
-        return False
+#    if 'is active' in commands.getoutput("gnome-screensaver-command -q"):
+#        return False
+#
+#    if 'lockscreen' in commands.getoutput("ps ax | grep '/usr/lib/unity/unity-panel-service .*[l]ockscreen'"):
+#        return False
 
-    if 'lockscreen' in commands.getoutput("ps ax | grep '/usr/lib/unity/unity-panel-service .*[l]ockscreen'"):
-        return False
+    if daemonlock_file:
+        with open(daemonlock_file, "r") as f:
+            daemonlock_str = f.readline()
+
+            if "Locked" in daemonlock_str:
+                return False
+
 
     return True
 
@@ -50,13 +60,13 @@ with daemon.DaemonContext():
             cur_date = cur_timestamp.split("_")[0]
             app, title = get_active_program()
             if is_active(app, title):
-                log_line = '%s\t%-30s\t%s\n' % (cur_timestamp, app, title)
+                log_line = '%s\t%s\t%-30s\t%s\n' % (cur_timestamp, computer_prefix, app, title)
 
                 if not should_print_screensaver:
                     dt_sleep = time.time() - time_of_screensaver_start
                     time_of_screensaver_start = 0
                     if (dt_sleep > 60) and (cur_date == prev_date):
-                        log_line_from_screensaver_work = "rest {} min??????????????????????????????".format(int(dt_sleep/60))
+                        log_line_from_screensaver_work = "rest {} min on {} ??????????????????????????????".format(int(dt_sleep/60), computer_prefix)
                         log_line = log_line_from_screensaver_work + "\n\n" + log_line
                         pass
 
@@ -66,7 +76,7 @@ with daemon.DaemonContext():
                 if should_print_screensaver:
                     time_of_screensaver_start = time.time()
 
-                log_line = '%s\t%-30s\t%s\n' % (cur_timestamp, "Screensaver", "\n\n\n")
+                log_line = '%s\t%s\t%-30s\t%s\n' % (cur_timestamp, computer_prefix, "Screensaver", "\n\n\n")
                 should_print = should_print_screensaver
                 should_print_screensaver = False
 
